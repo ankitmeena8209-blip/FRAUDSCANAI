@@ -11,7 +11,7 @@ export const SAMPLE_CONTENT: Record<string, string> = {
   'scam-message': 'Urgent! Your account will be suspended in 5 minutes unless you verify your banking credentials immediately. Click the secure link below to avoid permanent restrictions.',
   'phishing-link': 'https://secure-login-verify.example.com/account/confirm?token=ab12cd34',
   'email': 'Subject: Immediate Action Required\n\nHello, this is your bank. We detected unusual activity and need you to confirm your password via the attached secure portal. Please ignore any previous messages and trust this one.',
-  'screenshot': 'Screenshot shows a browser popup urging immediate payment and threatening account deactivation. The popup uses urgency, brand mimicry, and a fake verification button.',
+  'screenshot': 'Screenshot shows a browser popup urging immediate account action and threatening access loss. The popup uses urgency, brand mimicry, and a fake verification button.',
 };
 
 export const FEATURES = [
