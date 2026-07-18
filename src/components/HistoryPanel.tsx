@@ -35,12 +35,12 @@ export function HistoryPanel({ entries, onDelete, onDeleteAll }: HistoryPanelPro
           <p className="text-sm uppercase tracking-[0.3em] text-cyan-300">History</p>
           <h3 className="mt-2 text-2xl font-semibold">Saved scans</h3>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <label className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm">
+        <div className="grid grid-cols-2 gap-2 w-full md:flex md:w-auto md:items-center">
+          <label className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm col-span-2 md:col-span-1">
             <Search className="h-4 w-4 text-slate-400" />
-            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search" className="bg-transparent outline-none" />
+            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search" className="bg-transparent outline-none w-full md:w-auto" />
           </label>
-          <select value={filter} onChange={(e) => setFilter(e.target.value as 'all' | ScanType)} className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm outline-none">
+          <select value={filter} onChange={(e) => setFilter(e.target.value as 'all' | ScanType)} className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm outline-none col-span-1 w-full md:w-auto bg-slate-950">
             <option value="all">All</option>
             <option value="fake-news">Fake News</option>
             <option value="scam-message">Scam Message</option>
@@ -48,11 +48,11 @@ export function HistoryPanel({ entries, onDelete, onDeleteAll }: HistoryPanelPro
             <option value="email">Email</option>
             <option value="screenshot">Screenshot</option>
           </select>
-          <select value={sort} onChange={(e) => setSort(e.target.value as 'recent' | 'risk')} className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm outline-none">
+          <select value={sort} onChange={(e) => setSort(e.target.value as 'recent' | 'risk')} className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm outline-none col-span-1 w-full md:w-auto bg-slate-950">
             <option value="recent">Recent</option>
             <option value="risk">Risk</option>
           </select>
-          <button onClick={onDeleteAll} className="rounded-full border border-rose-400/20 bg-rose-500/10 px-3 py-2 text-sm text-rose-200 transition hover:bg-rose-500/20">Delete all</button>
+          <button onClick={onDeleteAll} className="rounded-full border border-rose-400/20 bg-rose-500/10 px-3 py-2 text-sm text-rose-200 transition hover:bg-rose-500/20 col-span-2 w-full md:w-auto">Delete all</button>
         </div>
       </div>
 

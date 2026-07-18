@@ -94,7 +94,7 @@ export function ScannerPanel({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap gap-2">
+      <div className="flex gap-2 overflow-x-auto scrollbar-none pb-1 flex-nowrap -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap sm:overflow-x-visible">
         {SCAN_TABS.map((tab) => (
           <button
             key={tab.id}
