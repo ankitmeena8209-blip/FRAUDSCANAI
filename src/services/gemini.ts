@@ -12,21 +12,20 @@ export interface GeminiAnalysisResponse {
 }
 
 const CANDIDATE_MODELS = [
+  'gemini-1.5-flash',
   'gemini-2.5-flash',
   'gemini-2.0-flash',
-  'gemini-1.5-flash-latest',
-  'gemini-1.5-flash',
-  'gemini-1.5-pro-latest',
   'gemini-1.5-pro',
+  'gemini-pro',
 ];
+
+const API_VERSIONS = ['v1', 'v1beta'];
 
 export async function analyzeContentWithGemini(content: string, type: ScanType): Promise<GeminiAnalysisResponse> {
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
   if (!apiKey) {
-    throw new Error('VITE_GEMINI_API_KEY is not defined in environment variables.');
+    throw new Error('VITE_GEMINI_API_KEY is not defined in Vercel Environment Variables.');
   }
-
-  const genAI = new GoogleGenerativeAI(apiKey);
 
   const systemInstruction = `
 You are an expert AI cyber defense analyst. Analyze the user's input and determine if it represents a threat.
@@ -73,36 +72,85 @@ Your entire response must be a single, valid JSON object matching this schema:
 
   const prompt = `Threat/Content Type: ${type}\nInput Content:\n${content}`;
 
-  let lastError: Error | null = null;
   let resultText = '';
+  let lastErrorMessage = '';
 
-  for (const modelName of CANDIDATE_MODELS) {
+  // Stage 1: Try direct REST API calls using v1 (stable) and v1beta endpoints across models
+  for (const version of API_VERSIONS) {
+    for (const model of CANDIDATE_MODELS) {
+      try {
+        const url = `https://generativelanguage.googleapis.com/${version}/models/${model}:generateContent?key=${apiKey}`;
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            systemInstruction: {
+              parts: [{ text: systemInstruction }]
+            },
+            contents: [
+              {
+                role: 'user',
+                parts: [{ text: prompt }]
+              }
+            ],
+            generationConfig: {
+              responseMimeType: 'application/json',
+              temperature: 0.1
+            }
+          })
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (text) {
+            resultText = text;
+            break;
+          }
+        } else {
+          const errData = await res.json().catch(() => null);
+          lastErrorMessage = errData?.error?.message || res.statusText || `HTTP ${res.status}`;
+        }
+      } catch (err: any) {
+        lastErrorMessage = err?.message || 'Network request failed';
+      }
+    }
+    if (resultText) break;
+  }
+
+  // Stage 2: Fallback to SDK execution if REST calls were unfulfilled
+  if (!resultText) {
     try {
-      const model = genAI.getGenerativeModel({
-        model: modelName,
-        systemInstruction,
-        generationConfig: {
-          responseMimeType: 'application/json',
-          temperature: 0.1,
-        },
-      });
+      const genAI = new GoogleGenerativeAI(apiKey);
+      for (const modelName of CANDIDATE_MODELS) {
+        try {
+          const model = genAI.getGenerativeModel({
+            model: modelName,
+            systemInstruction,
+            generationConfig: {
+              responseMimeType: 'application/json',
+              temperature: 0.1,
+            },
+          });
 
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      resultText = response.text();
+          const result = await model.generateContent(prompt);
+          const response = await result.response;
+          resultText = response.text();
 
-      if (resultText) {
-        break;
+          if (resultText) break;
+        } catch (err: any) {
+          lastErrorMessage = err?.message || lastErrorMessage;
+        }
       }
     } catch (err: any) {
-      console.warn(`Gemini model ${modelName} call failed:`, err?.message || err);
-      lastError = err;
+      lastErrorMessage = err?.message || lastErrorMessage;
     }
   }
 
   if (!resultText) {
-    const errorMsg = lastError?.message || 'All candidate Gemini models failed to generate a response.';
-    throw new Error(`Gemini API error: ${errorMsg}`);
+    throw new Error(
+      `Gemini API Error: ${lastErrorMessage || 'Failed to reach Gemini models'}. Please verify VITE_GEMINI_API_KEY in Vercel Environment Variables.`
+    );
   }
 
   try {
