@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion';
 import { ShieldCheck } from 'lucide-react';
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { Navbar } from './components/Navbar';
@@ -115,10 +114,10 @@ function App() {
       </Suspense>
       <Navbar theme={theme} setTheme={setTheme} />
       <main className="relative z-10 mx-auto flex max-w-7xl flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8">
-        <motion.section initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
+        <section className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="space-y-6">
             <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-500/10 px-3 py-1 text-sm text-cyan-200">
-              <motion.span animate={{ rotate: [0, 360] }} transition={{ duration: 6, repeat: Infinity, ease: 'linear' }} className="inline-flex h-2.5 w-2.5 rounded-full bg-cyan-300" />
+              <span className="inline-flex h-2.5 w-2.5 rounded-full bg-cyan-300" />
               Premium cybersecurity intelligence for modern teams
             </div>
             <div className="space-y-4">
@@ -142,14 +141,14 @@ function App() {
               ))}
             </div>
           </div>
-          <motion.div initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} className="glass rounded-[32px] p-6 shadow-premium">
+          <div className="glass rounded-[32px] p-6 shadow-premium">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm uppercase tracking-[0.3em] text-cyan-300">Threat overview</p>
                 <h2 className="mt-2 text-2xl font-semibold">Zero-friction review</h2>
               </div>
               <div className="rounded-full border border-cyan-400/20 bg-cyan-400/10 p-2 text-cyan-200">
-                <motion.div animate={{ rotate: [0, 360] }} transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}><ShieldCheck className="h-5 w-5" /></motion.div>
+                <div><ShieldCheck className="h-5 w-5" /></div>
               </div>
             </div>
             <div className="mt-6 space-y-4">
@@ -160,8 +159,8 @@ function App() {
                 </div>
               ))}
             </div>
-          </motion.div>
-        </motion.section>
+          </div>
+        </section>
 
         <SectionCard title="Scanner" description="Select a threat type, paste content, upload evidence, and trigger a live analysis workflow." glow>
           <div id="scanner" className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
