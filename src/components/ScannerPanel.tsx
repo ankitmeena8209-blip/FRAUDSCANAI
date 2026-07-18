@@ -37,7 +37,7 @@ export function ScannerPanel({
   isScanning,
   setLoadingStep,
 }: ScannerPanelProps) {
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<{ content: string }>({
+  const { register, handleSubmit, setValue, formState: { errors } } = useForm<{ content: string }>({
     resolver: zodResolver(schema),
     defaultValues: { content: inputValue },
   });
@@ -55,10 +55,12 @@ export function ScannerPanel({
     reader.onload = () => {
       setFilePreview(typeof reader.result === 'string' ? reader.result : null);
       setUploadError(null);
-      setInputValue(`${inputValue}\n[Uploaded ${file.name}]`);
+      const newText = `${inputValue}\n[Uploaded ${file.name}]`;
+      setInputValue(newText);
+      setValue('content', newText, { shouldValidate: true });
     };
     reader.readAsDataURL(file);
-  }, [inputValue, setInputValue, setFilePreview]);
+  }, [inputValue, setInputValue, setFilePreview, setValue]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop, accept: { 'image/*': [], 'application/pdf': [] } });
 
@@ -85,9 +87,37 @@ export function ScannerPanel({
   const applySample = () => {
     const sample = SAMPLE_CONTENT[selectedTab];
     setInputValue(sample);
-    reset({ content: sample });
+    setValue('content', sample, { shouldValidate: true });
     setFilePreview(null);
     setUploadError(null);
+  };
+
+  const handleClear = () => {
+    setInputValue('');
+    setValue('content', '', { shouldValidate: true });
+  };
+
+  const handlePaste = async () => {
+    try {
+      if (navigator.clipboard && navigator.clipboard.readText) {
+        const text = await navigator.clipboard.readText();
+        if (text) {
+          const trimmedText = text.slice(0, 320);
+          setInputValue(trimmedText);
+          setValue('content', trimmedText, { shouldValidate: true, shouldDirty: true });
+          setUploadError(null);
+          return;
+        }
+      }
+    } catch (err) {
+      console.warn('Clipboard access restricted:', err);
+    }
+    // Fallback for mobile Safari / Android Chrome security restrictions
+    const textarea = document.querySelector<HTMLTextAreaElement>('textarea[name="content"]');
+    if (textarea) {
+      textarea.focus();
+    }
+    alert('To paste on your phone, tap directly inside the text area and select Paste.');
   };
 
   const charCount = inputValue.length;
@@ -131,19 +161,20 @@ export function ScannerPanel({
           value={inputValue}
           onChange={(e) => {
             setInputValue(e.target.value);
+            setValue('content', e.target.value, { shouldValidate: true });
           }}
           rows={8}
           maxLength={320}
           placeholder={inputPlaceholder}
-          className="min-h-[220px] w-full resize-none rounded-[20px] border border-white/10 bg-slate-900/70 p-4 text-sm outline-none transition focus:border-cyan-400/40"
+          className="min-h-[220px] w-full resize-none rounded-[20px] border border-white/10 bg-slate-900/70 p-4 text-sm outline-none transition focus:border-cyan-400/40 text-slate-100 placeholder:text-slate-500"
         />
 
         {errors.content && <p className="text-sm text-rose-400">{errors.content.message}</p>}
 
         <div className="flex flex-wrap gap-3">
           <button type="button" onClick={applySample} className="rounded-full border border-cyan-400/20 bg-cyan-400/10 px-4 py-2 text-sm text-cyan-200 transition hover:bg-cyan-400/20">Load sample</button>
-          <button type="button" onClick={() => setInputValue('')} className="rounded-full border border-white/10 px-4 py-2 text-sm text-slate-300 transition hover:bg-white/10">Clear</button>
-          <button type="button" onClick={() => navigator.clipboard.writeText(inputValue)} className="rounded-full border border-white/10 px-4 py-2 text-sm text-slate-300 transition hover:bg-white/10">Paste</button>
+          <button type="button" onClick={handleClear} className="rounded-full border border-white/10 px-4 py-2 text-sm text-slate-300 transition hover:bg-white/10">Clear</button>
+          <button type="button" onClick={handlePaste} className="rounded-full border border-white/10 px-4 py-2 text-sm text-slate-300 transition hover:bg-white/10">Paste</button>
         </div>
 
         <div {...getRootProps()} className={classNames('rounded-[20px] border border-dashed p-4 text-center transition', isDragActive ? 'border-cyan-400 bg-cyan-500/10' : 'border-white/10 bg-slate-900/60')}>

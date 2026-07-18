@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "@hookform/resolvers": "^3.4.2",
     "framer-motion": "^11.11.6",
     "lucide-react": "^0.454.0",

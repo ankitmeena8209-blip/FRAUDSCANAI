@@ -1,9 +1,9 @@
 import { ShieldCheck } from 'lucide-react';
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { Navbar } from './components/Navbar';
+import { PrivacyPolicyModal } from './components/PrivacyPolicyModal';
 import { SectionCard } from './components/SectionCard';
 import { FAQ_ITEMS, FEATURES, STATS } from './data/samples';
-import { useTheme } from './hooks/useTheme';
 import { createScanResult, loadHistory, saveHistory } from './services/storage';
 import { analyzeContentWithGemini } from './services/gemini';
 import type { HistoryEntry, ScanType } from './types';
@@ -25,7 +25,6 @@ function LoadingCard({ label }: { label: string }) {
 }
 
 function App() {
-  const { theme, setTheme } = useTheme();
   const [activeTab, setActiveTab] = useState<ScanType>('fake-news');
   const [inputValue, setInputValue] = useState('');
   const [filePreview, setFilePreview] = useState<string | null>(null);
@@ -33,6 +32,7 @@ function App() {
   const [loadingStep, setLoadingStep] = useState(0);
   const [result, setResult] = useState<HistoryEntry | null>(null);
   const [history, setHistory] = useState<HistoryEntry[]>(() => loadHistory());
+  const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
 
   useEffect(() => {
     saveHistory(history);
@@ -63,7 +63,7 @@ function App() {
         patterns: geminiResult.warningSigns,
         recommendations: geminiResult.safetyTips,
         evidence: geminiResult.evidence,
-        mode: theme,
+        mode: 'dark',
         content,
       });
 
@@ -92,11 +92,11 @@ function App() {
   };
 
   return (
-    <div className={classNames('min-h-screen bg-slate-950 text-slate-100', theme === 'dark' ? 'dark' : 'light')}>
+    <div className={classNames('min-h-screen bg-slate-950 text-slate-100 dark')}>
       <Suspense fallback={null}>
         <BackgroundEffects />
       </Suspense>
-      <Navbar theme={theme} setTheme={setTheme} />
+      <Navbar onOpenPrivacy={() => setIsPrivacyOpen(true)} />
       <main className="relative z-10 mx-auto flex max-w-7xl flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8">
         <section className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="space-y-6">
@@ -218,9 +218,29 @@ function App() {
         </SectionCard>
       </main>
 
-      <footer className="relative z-10 border-t border-white/10 bg-slate-950/70 px-4 py-6 text-center text-sm text-slate-400">
-        <p>FraudScanAI © 2026. Built as a premium single-page cybersecurity experience.</p>
+      <footer className="relative z-10 border-t border-white/10 bg-slate-950/70 px-4 py-8 text-center text-sm text-slate-400">
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 sm:flex-row sm:px-6 lg:px-8">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="h-5 w-5 text-cyan-400" />
+            <span className="font-semibold text-slate-200">FraudScanAI</span>
+            <span>© 2026. All rights reserved.</span>
+          </div>
+          <div className="flex items-center gap-6">
+            <a href="#scanner" className="hover:text-slate-200 transition">Scanner</a>
+            <a href="#history" className="hover:text-slate-200 transition">History</a>
+            <a href="#faq" className="hover:text-slate-200 transition">FAQ</a>
+            <button
+              type="button"
+              onClick={() => setIsPrivacyOpen(true)}
+              className="text-cyan-300 hover:text-cyan-200 transition underline underline-offset-4"
+            >
+              Privacy Policy
+            </button>
+          </div>
+        </div>
       </footer>
+
+      <PrivacyPolicyModal isOpen={isPrivacyOpen} onClose={() => setIsPrivacyOpen(false)} />
     </div>
   );
 }

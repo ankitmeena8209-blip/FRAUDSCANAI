@@ -1,14 +1,12 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { ShieldCheck, MoonStar, SunMedium, Menu, X } from 'lucide-react';
+import { ShieldCheck, Menu, X, ShieldAlert } from 'lucide-react';
 import { useState } from 'react';
-import type { Dispatch, SetStateAction } from 'react';
 
 interface NavbarProps {
-  theme: 'dark' | 'light';
-  setTheme: Dispatch<SetStateAction<'dark' | 'light'>>;
+  onOpenPrivacy: () => void;
 }
 
-export function Navbar({ theme, setTheme }: NavbarProps) {
+export function Navbar({ onOpenPrivacy }: NavbarProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -33,25 +31,27 @@ export function Navbar({ theme, setTheme }: NavbarProps) {
           <a href="#scanner" className="rounded-full border border-white/10 px-4 py-2 text-sm text-slate-300 transition hover:bg-white/10">Scanner</a>
           <a href="#history" className="rounded-full border border-white/10 px-4 py-2 text-sm text-slate-300 transition hover:bg-white/10">History</a>
           <a href="#faq" className="rounded-full border border-white/10 px-4 py-2 text-sm text-slate-300 transition hover:bg-white/10">FAQ</a>
+          <button
+            type="button"
+            onClick={onOpenPrivacy}
+            className="flex items-center gap-1.5 rounded-full border border-cyan-400/20 bg-cyan-400/10 px-4 py-2 text-sm text-cyan-200 transition hover:bg-cyan-400/20"
+          >
+            <ShieldAlert className="h-4 w-4 text-cyan-300" />
+            Privacy Policy
+          </button>
         </div>
-
-        {/* Desktop Theme Toggle */}
-        <button
-          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-          className="hidden md:block rounded-full border border-white/10 bg-white/10 p-2.5 text-slate-100 transition hover:scale-105"
-        >
-          {theme === 'dark' ? <SunMedium className="h-5 w-5" /> : <MoonStar className="h-5 w-5" />}
-        </button>
 
         {/* Mobile controls */}
         <div className="flex items-center gap-2 md:hidden">
           <button
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            className="rounded-full border border-white/10 bg-white/10 p-2 text-slate-100 transition hover:scale-105"
+            type="button"
+            onClick={onOpenPrivacy}
+            className="rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1.5 text-xs text-cyan-200 transition hover:bg-cyan-400/20"
           >
-            {theme === 'dark' ? <SunMedium className="h-5.5 w-5.5" /> : <MoonStar className="h-5.5 w-5.5" />}
+            Privacy
           </button>
           <button
+            type="button"
             onClick={() => setIsOpen(!isOpen)}
             className="rounded-full border border-white/10 bg-white/10 p-2 text-slate-100 transition"
           >
@@ -92,6 +92,16 @@ export function Navbar({ theme, setTheme }: NavbarProps) {
               >
                 FAQ
               </a>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsOpen(false);
+                  onOpenPrivacy();
+                }}
+                className="rounded-full border border-cyan-400/20 bg-cyan-400/10 px-4 py-2.5 text-center text-sm text-cyan-200 transition hover:bg-cyan-400/20"
+              >
+                Privacy Policy
+              </button>
             </div>
           </motion.div>
         )}
