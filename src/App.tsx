@@ -1,4 +1,4 @@
-import { ShieldCheck } from 'lucide-react';
+import { AlertCircle, ShieldCheck, X } from 'lucide-react';
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { Navbar } from './components/Navbar';
 import { PrivacyPolicyModal } from './components/PrivacyPolicyModal';
@@ -33,6 +33,7 @@ function App() {
   const [result, setResult] = useState<HistoryEntry | null>(null);
   const [history, setHistory] = useState<HistoryEntry[]>(() => loadHistory());
   const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
+  const [scanError, setScanError] = useState<string | null>(null);
 
   useEffect(() => {
     saveHistory(history);
@@ -42,6 +43,7 @@ function App() {
     setIsScanning(true);
     setLoadingStep(0);
     setResult(null);
+    setScanError(null);
 
     const intervalId = window.setInterval(() => {
       setLoadingStep((prev) => Math.min(prev + 1, 2));
@@ -72,8 +74,8 @@ function App() {
       setHistory((prev) => [nextEntry, ...prev].slice(0, 12));
     } catch (err: any) {
       window.clearInterval(intervalId);
-      console.error(err);
-      alert(err.message || 'An error occurred during analysis.');
+      console.error('Gemini Analysis Error:', err);
+      setScanError(err.message || 'An error occurred during analysis.');
     } finally {
       setIsScanning(false);
     }
@@ -147,6 +149,21 @@ function App() {
         </section>
 
         <SectionCard title="Scanner" description="Select a threat type, paste content, upload evidence, and trigger a live analysis workflow." glow>
+          {scanError && (
+            <div className="mb-4 flex items-center justify-between rounded-[20px] border border-rose-500/30 bg-rose-500/10 p-4 text-sm text-rose-200 shadow-lg">
+              <div className="flex items-center gap-3">
+                <AlertCircle className="h-5 w-5 flex-shrink-0 text-rose-400" />
+                <p>{scanError}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setScanError(null)}
+                className="rounded-full p-1 text-rose-400 hover:bg-rose-500/20"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          )}
           <div id="scanner" className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
             <Suspense fallback={<LoadingCard label="Loading scanner…" />}>
               <ScannerPanel

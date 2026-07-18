@@ -11,6 +11,15 @@ export interface GeminiAnalysisResponse {
   safetyTips: string[];
 }
 
+const CANDIDATE_MODELS = [
+  'gemini-2.5-flash',
+  'gemini-2.0-flash',
+  'gemini-1.5-flash-latest',
+  'gemini-1.5-flash',
+  'gemini-1.5-pro-latest',
+  'gemini-1.5-pro',
+];
+
 export async function analyzeContentWithGemini(content: string, type: ScanType): Promise<GeminiAnalysisResponse> {
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
   if (!apiKey) {
@@ -62,28 +71,38 @@ Your entire response must be a single, valid JSON object matching this schema:
 }
   `;
 
-  const model = genAI.getGenerativeModel({
-    model: 'gemini-1.5-flash',
-    systemInstruction,
-    generationConfig: {
-      responseMimeType: 'application/json',
-      temperature: 0.1,
-    },
-  });
-
   const prompt = `Threat/Content Type: ${type}\nInput Content:\n${content}`;
 
+  let lastError: Error | null = null;
   let resultText = '';
-  try {
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    resultText = response.text();
-  } catch (err: any) {
-    throw new Error(`Gemini API error: ${err.message || 'Failed to fetch analysis from Gemini API'}`);
+
+  for (const modelName of CANDIDATE_MODELS) {
+    try {
+      const model = genAI.getGenerativeModel({
+        model: modelName,
+        systemInstruction,
+        generationConfig: {
+          responseMimeType: 'application/json',
+          temperature: 0.1,
+        },
+      });
+
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      resultText = response.text();
+
+      if (resultText) {
+        break;
+      }
+    } catch (err: any) {
+      console.warn(`Gemini model ${modelName} call failed:`, err?.message || err);
+      lastError = err;
+    }
   }
 
   if (!resultText) {
-    throw new Error('Invalid empty response returned by Gemini API');
+    const errorMsg = lastError?.message || 'All candidate Gemini models failed to generate a response.';
+    throw new Error(`Gemini API error: ${errorMsg}`);
   }
 
   try {
