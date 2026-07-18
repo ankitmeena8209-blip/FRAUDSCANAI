@@ -1,19 +1,28 @@
 import { motion } from 'framer-motion';
 import { ShieldCheck } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { BackgroundEffects } from './components/BackgroundEffects';
-import { FeatureGrid } from './components/FeatureGrid';
-import { HistoryPanel } from './components/HistoryPanel';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { Navbar } from './components/Navbar';
-import { ResultPanel } from './components/ResultPanel';
-import { ScannerPanel } from './components/ScannerPanel';
 import { SectionCard } from './components/SectionCard';
-import { TrendChart } from './components/TrendChart';
 import { FAQ_ITEMS, FEATURES, STATS } from './data/samples';
 import { useTheme } from './hooks/useTheme';
 import { createScanResult, loadHistory, saveHistory } from './services/storage';
 import type { HistoryEntry, ScanType } from './types';
 import { classNames } from './utils/helpers';
+
+const BackgroundEffects = lazy(() => import('./components/BackgroundEffects').then((module) => ({ default: module.BackgroundEffects })));
+const FeatureGrid = lazy(() => import('./components/FeatureGrid').then((module) => ({ default: module.FeatureGrid })));
+const HistoryPanel = lazy(() => import('./components/HistoryPanel').then((module) => ({ default: module.HistoryPanel })));
+const ResultPanel = lazy(() => import('./components/ResultPanel').then((module) => ({ default: module.ResultPanel })));
+const ScannerPanel = lazy(() => import('./components/ScannerPanel').then((module) => ({ default: module.ScannerPanel })));
+const TrendChart = lazy(() => import('./components/TrendChart').then((module) => ({ default: module.TrendChart })));
+
+function LoadingCard({ label }: { label: string }) {
+  return (
+    <div className="flex min-h-[180px] items-center justify-center rounded-[24px] border border-white/10 bg-slate-950/60 text-sm text-slate-400">
+      <span>{label}</span>
+    </div>
+  );
+}
 
 function App() {
   const { theme, setTheme } = useTheme();
@@ -101,7 +110,9 @@ function App() {
 
   return (
     <div className={classNames('min-h-screen bg-slate-950 text-slate-100', theme === 'dark' ? 'dark' : 'light')}>
-      <BackgroundEffects />
+      <Suspense fallback={null}>
+        <BackgroundEffects />
+      </Suspense>
       <Navbar theme={theme} setTheme={setTheme} />
       <main className="relative z-10 mx-auto flex max-w-7xl flex-col gap-8 px-4 py-8 sm:px-6 lg:px-8">
         <motion.section initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
@@ -154,31 +165,39 @@ function App() {
 
         <SectionCard title="Scanner" description="Select a threat type, paste content, upload evidence, and trigger a live analysis workflow." glow>
           <div id="scanner" className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
-            <ScannerPanel
-              selectedTab={activeTab}
-              onTabChange={setActiveTab}
-              inputValue={inputValue}
-              setInputValue={setInputValue}
-              filePreview={filePreview}
-              setFilePreview={setFilePreview}
-              onScan={runScan}
-              isScanning={isScanning}
-              loadingStep={loadingStep}
-              setLoadingStep={setLoadingStep}
-            />
-            <ResultPanel result={result} isScanning={isScanning} loadingStep={loadingStep} />
+            <Suspense fallback={<LoadingCard label="Loading scanner…" />}>
+              <ScannerPanel
+                selectedTab={activeTab}
+                onTabChange={setActiveTab}
+                inputValue={inputValue}
+                setInputValue={setInputValue}
+                filePreview={filePreview}
+                setFilePreview={setFilePreview}
+                onScan={runScan}
+                isScanning={isScanning}
+                loadingStep={loadingStep}
+                setLoadingStep={setLoadingStep}
+              />
+            </Suspense>
+            <Suspense fallback={<LoadingCard label="Loading analysis panel…" />}>
+              <ResultPanel result={result} isScanning={isScanning} loadingStep={loadingStep} />
+            </Suspense>
           </div>
         </SectionCard>
 
         <SectionCard title="Evidence history" description="Search, filter, and review past scans with a polished local archive.">
           <div id="history">
-            <HistoryPanel entries={history} onDelete={deleteEntry} onDeleteAll={deleteAll} />
+            <Suspense fallback={<LoadingCard label="Loading history…" />}>
+              <HistoryPanel entries={history} onDelete={deleteEntry} onDeleteAll={deleteAll} />
+            </Suspense>
           </div>
         </SectionCard>
 
         <SectionCard title="Platform capabilities" description="Every interaction is designed to feel premium and purposeful.">
           <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
-            <FeatureGrid />
+            <Suspense fallback={<LoadingCard label="Loading capabilities…" />}>
+              <FeatureGrid />
+            </Suspense>
             <div className="rounded-[24px] border border-white/10 bg-slate-950/50 p-5">
               <div className="mb-4 flex items-center justify-between">
                 <div>
@@ -187,7 +206,9 @@ function App() {
                 </div>
                 <div className="rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-sm text-cyan-200">Live demo</div>
               </div>
-              <TrendChart />
+              <Suspense fallback={<LoadingCard label="Loading trend view…" />}>
+                <TrendChart />
+              </Suspense>
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
                 <div className="rounded-[16px] border border-white/10 bg-white/5 p-3">
                   <p className="text-sm text-slate-400">Mitigation speed</p>
