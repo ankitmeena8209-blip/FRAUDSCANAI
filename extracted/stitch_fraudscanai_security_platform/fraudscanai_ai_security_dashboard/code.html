@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>FraudScanAI - Stop Scams Before They Happen</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-tertiary-fixed": "#00174b",
+                      "surface-bright": "#333a3c",
+                      "surface-container-lowest": "#080f11",
+                      "on-primary-fixed": "#001f25",
+                      "error": "#ffb4ab",
+                      "primary-fixed": "#a5eeff",
+                      "surface-container": "#1a2123",
+                      "outline-variant": "#3b494c",
+                      "secondary-fixed-dim": "#d0bcff",
+                      "on-secondary-fixed": "#23005c",
+                      "on-error": "#690005",
+                      "secondary-fixed": "#e9ddff",
+                      "on-tertiary-container": "#004cc9",
+                      "on-surface-variant": "#bac9cd",
+                      "surface": "#0d1516",
+                      "surface-container-low": "#161d1f",
+                      "on-secondary": "#3c0091",
+                      "primary-fixed-dim": "#00daf8",
+                      "tertiary": "#e3e8ff",
+                      "surface-container-high": "#242b2d",
+                      "primary": "#baf2ff",
+                      "on-primary-container": "#005f6d",
+                      "surface-tint": "#00daf8",
+                      "on-primary": "#00363f",
+                      "tertiary-container": "#bccbff",
+                      "on-tertiary-fixed-variant": "#003ea8",
+                      "on-background": "#dce4e6",
+                      "on-error-container": "#ffdad6",
+                      "on-surface": "#dce4e6",
+                      "secondary": "#d0bcff",
+                      "error-container": "#93000a",
+                      "inverse-surface": "#dce4e6",
+                      "inverse-on-surface": "#2a3233",
+                      "on-tertiary": "#002a78",
+                      "surface-variant": "#2f3638",
+                      "on-secondary-fixed-variant": "#5516be",
+                      "primary-container": "#00e0ff",
+                      "tertiary-fixed-dim": "#b4c5ff",
+                      "background": "#0d1516",
+                      "inverse-primary": "#006877",
+                      "outline": "#859397",
+                      "on-secondary-container": "#c4abff",
+                      "surface-container-highest": "#2f3638",
+                      "tertiary-fixed": "#dbe1ff",
+                      "on-primary-fixed-variant": "#004e5a",
+                      "secondary-container": "#571bc1",
+                      "surface-dim": "#0d1516"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px",
+                      "4xl": "1.5rem"
+              },
+              "spacing": {
+                      "margin-mobile": "16px",
+                      "margin-desktop": "48px",
+                      "unit": "4px",
+                      "container-max": "1440px",
+                      "gutter": "24px"
+              },
+              "fontFamily": {
+                      "body-lg": [
+                              "Geist"
+                      ],
+                      "label-sm": [
+                              "JetBrains Mono"
+                      ],
+                      "display": [
+                              "Geist"
+                      ],
+                      "body-md": [
+                              "Geist"
+                      ],
+                      "headline-lg": [
+                              "Geist"
+                      ],
+                      "headline-lg-mobile": [
+                              "Geist"
+                      ],
+                      "headline-md": [
+                              "Geist"
+                      ],
+                      "label-md": [
+                              "JetBrains Mono"
+                      ]
+              },
+              "fontSize": {
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "display": [
+                              "48px",
+                              {
+                                      "lineHeight": "1.1",
+                                      "letterSpacing": "-0.04em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "label-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "0.02em",
+                                      "fontWeight": "500"
+                              }
+                      ]
+              }
+            }
+          }
+        }
+      </script>
+<style>
+        body {
+            background-color: #05070A;
+            background-image: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 24px 24px;
+            color: #dce4e6;
+            overflow-x: hidden;
+        }
+
+        .glass-card {
+            background: rgba(12, 15, 20, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 224, 255, 0.1);
+            background-image: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 100%);
+        }
+
+        .glowing-border {
+            position: relative;
+        }
+        
+        .glowing-border::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            padding: 1px;
+            background: linear-gradient(45deg, rgba(0, 224, 255, 0.3), rgba(208, 188, 255, 0.3));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+
+        .scanner-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #00E0FF, transparent);
+            box-shadow: 0 0 10px #00E0FF, 0 0 20px #00E0FF;
+            opacity: 0;
+            z-index: 10;
+        }
+
+        @keyframes scan-animation {
+            0% { top: 0%; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { top: 100%; opacity: 0; }
+        }
+
+        .scanning .scanner-line {
+            animation: scan-animation 2s linear infinite;
+        }
+
+        .magnetic-btn {
+            transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .pulse-primary {
+            animation: pulse-border 2s infinite;
+        }
+
+        @keyframes pulse-border {
+            0% { box-shadow: 0 0 0 0 rgba(0, 224, 255, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(0, 224, 255, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 224, 255, 0); }
+        }
+
+        .shimmer-progress {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .shimmer-progress::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            animation: shimmer 1.5s infinite;
+        }
+
+        @keyframes shimmer {
+            100% { left: 200%; }
+        }
+        
+        /* Hide scrollbar for clean look but allow scrolling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(13, 21, 22, 0.5); 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(59, 73, 76, 0.5); 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(133, 147, 151, 0.8); 
+        }
+    </style>
+</head>
+<body class="antialiased min-h-screen flex flex-col font-body-md">
+<!-- TopNav from JSON -->
+<nav class="bg-surface/70 backdrop-blur-xl fixed top-0 w-full z-50 border-b border-outline-variant/30 shadow-none">
+<div class="flex justify-between items-center h-16 px-margin-desktop max-w-container-max mx-auto">
+<div class="flex items-center space-x-8">
+<a class="font-display text-headline-md text-primary tracking-tighter" href="#">FraudScanAI</a>
+<div class="hidden md:flex space-x-6">
+<a class="font-body-md text-body-md text-primary font-bold border-b-2 border-primary pb-1 active:scale-95 duration-200 transition-transform" href="#">Dashboard</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors hover:bg-primary/10 transition-all duration-300 rounded px-2 py-1" href="#">Threat Intelligence</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors hover:bg-primary/10 transition-all duration-300 rounded px-2 py-1" href="#">Audit Logs</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors hover:bg-primary/10 transition-all duration-300 rounded px-2 py-1" href="#">Settings</a>
+</div>
+</div>
+<div class="flex items-center space-x-4">
+<button class="text-on-surface-variant hover:text-primary transition-colors hover:bg-primary/10 rounded-full p-2">
+<span class="material-symbols-outlined">terminal</span>
+</button>
+<button class="bg-primary text-on-primary font-label-md text-label-md px-4 py-2 rounded-lg font-medium hover:opacity-90 transition-opacity">
+                    Launch Scanner
+                </button>
+</div>
+</div>
+</nav>
+<main class="flex-grow pt-16 relative">
+<!-- Hero Section -->
+<section class="relative min-h-[819px] flex items-center justify-center overflow-hidden py-24">
+<div class="absolute inset-0 w-full h-full -z-10">
+<!-- STITCH_SHADER_START:ANIMATION_2 class="absolute inset-0 w-full h-full opacity-60" -->
+<div class="absolute inset-0 w-full h-full opacity-60" style="display:block;">
+<canvas id="shader-canvas-ANIMATION_2" style="display:block;width:100%;height:100%"></canvas>
+<script>
+(function() {
+  const canvas = document.getElementById('shader-canvas-ANIMATION_2');
+
+  // Sync the WebGL drawing-buffer size with the CSS-driven layout size.
+  // This fires on initial layout and whenever the element is resized.
+  function syncSize() {
+    const w = canvas.clientWidth  || 1280;
+    const h = canvas.clientHeight || 720;
+    if (canvas.width !== w || canvas.height !== h) {
+      canvas.width  = w;
+      canvas.height = h;
+    }
+  }
+  if (typeof ResizeObserver !== 'undefined') {
+    new ResizeObserver(syncSize).observe(canvas);
+  }
+  syncSize();
+
+  const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+  if (!gl) return;
+  const vs = `attribute vec2 a_position;
+varying vec2 v_texCoord;
+void main() {
+  v_texCoord = a_position * 0.5 + 0.5;
+  gl_Position = vec4(a_position, 0.0, 1.0);
+}`;
+  const fs = `precision highp float;
+uniform float u_time;
+uniform vec2 u_resolution;
+
+vec3 hsv2rgb(vec3 c) {
+    vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+    vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+    return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
+}
+
+float noise(vec2 p) {
+    return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
+}
+
+void main() {
+    vec2 uv = gl_FragCoord.xy / u_resolution.xy;
+    float time = u_time * 0.2;
+    
+    // Aurora waves
+    float wave = sin(uv.x * 3.0 + time) * 0.1;
+    wave += sin(uv.x * 2.0 - time * 1.5) * 0.05;
+    
+    vec3 color = vec3(0.02, 0.03, 0.04); // Base dark
+    
+    // Deep blues/purples
+    float glow1 = smoothstep(0.4, 0.0, abs(uv.y - 0.5 + wave));
+    color += hsv2rgb(vec3(0.6 + sin(time * 0.5) * 0.1, 0.8, 0.15)) * glow1;
+    
+    // Cyan accents
+    float glow2 = smoothstep(0.3, 0.0, abs(uv.y - 0.4 - wave * 2.0));
+    color += hsv2rgb(vec3(0.5, 0.9, 0.1)) * glow2;
+
+    // Subtle Grid overlay logic could be done in CSS, but let's add some grain
+    float grain = noise(uv * u_time) * 0.02;
+    color += grain;
+
+    gl_FragColor = vec4(color, 1.0);
+}`;
+  function cs(type, src) {
+    const s = gl.createShader(type);
+    gl.shaderSource(s, src);
+    gl.compileShader(s);
+    return s;
+  }
+  const prog = gl.createProgram();
+  gl.attachShader(prog, cs(gl.VERTEX_SHADER, vs));
+  gl.attachShader(prog, cs(gl.FRAGMENT_SHADER, fs));
+  gl.linkProgram(prog);
+  gl.useProgram(prog);
+  const buf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+  const pos = gl.getAttribLocation(prog, 'a_position');
+  gl.enableVertexAttribArray(pos);
+  gl.vertexAttribPointer(pos, 2, gl.FLOAT, false, 0, 0);
+  const uTime = gl.getUniformLocation(prog, 'u_time');
+  const uRes = gl.getUniformLocation(prog, 'u_resolution');
+  const uMouse = gl.getUniformLocation(prog, 'u_mouse');
+
+  // u_mouse is in pixel coordinates matching u_resolution (ShaderToy convention).
+  // Shaders that need normalized coords should use: u_mouse / u_resolution.
+  let mouse = { x: canvas.width / 2, y: canvas.height / 2 };
+  window.addEventListener('mousemove', (event) => {
+    const rect = canvas.getBoundingClientRect();
+    if (rect.width && rect.height) {
+      const nx = (event.clientX - rect.left) / rect.width;
+      const ny = 1.0 - (event.clientY - rect.top) / rect.height;
+      mouse.x = nx * canvas.width;
+      mouse.y = ny * canvas.height;
+    }
+  });
+
+  function render(t) {
+    if (typeof ResizeObserver === 'undefined') syncSize();
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    if (uTime) gl.uniform1f(uTime, t * 0.001);
+    if (uRes) gl.uniform2f(uRes, canvas.width, canvas.height);
+    if (uMouse) gl.uniform2f(uMouse, mouse.x, mouse.y);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    requestAnimationFrame(render);
+  }
+  render(0);
+})();
+</script>
+</div>
+<!-- STITCH_SHADER_END:ANIMATION_2 -->
+<div class="absolute inset-0 bg-gradient-to-b from-transparent via-background/50 to-background"></div>
+</div>
+<div class="relative z-10 text-center px-margin-mobile md:px-margin-desktop max-w-4xl mx-auto">
+<div class="mb-8 flex justify-center">
+<div class="w-20 h-20 rounded-2xl bg-surface-container/50 border border-primary/30 flex items-center justify-center backdrop-blur-md shadow-[0_0_30px_rgba(0,224,255,0.2)]">
+<span class="material-symbols-outlined text-4xl text-primary" style="font-variation-settings: 'FILL' 1;">shield</span>
+</div>
+</div>
+<h1 class="font-display text-display md:text-[64px] text-on-surface mb-6 leading-tight">
+                    Stop Online Scams <br/>
+<span class="text-transparent bg-clip-text bg-gradient-to-r from-primary via-primary-container to-secondary">Before They Stop You.</span>
+</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-10 max-w-2xl mx-auto">
+                    Advanced AI-powered threat detection that analyzes texts, emails, and links in milliseconds to protect your digital identity with military-grade precision.
+                </p>
+<div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+<button class="magnetic-btn w-full sm:w-auto bg-primary text-on-primary font-label-md text-label-md px-8 py-4 rounded-lg font-bold pulse-primary flex items-center justify-center gap-2" id="heroScanBtn">
+<span class="material-symbols-outlined">radar</span>
+                        Scan Now
+                    </button>
+<button class="magnetic-btn w-full sm:w-auto bg-surface-container-high border border-outline-variant text-on-surface font-label-md text-label-md px-8 py-4 rounded-lg font-medium hover:bg-surface-variant transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">play_circle</span>
+                        See Demo
+                    </button>
+</div>
+</div>
+</section>
+<!-- Main Scanner Interface -->
+<section class="relative z-20 -mt-10 px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto mb-24" id="scannerSection">
+<div class="glass-card rounded-4xl glowing-border p-1 md:p-2 overflow-hidden shadow-2xl relative" id="scannerContainer">
+<div class="scanner-line"></div>
+<div class="bg-surface-container-lowest/80 rounded-[1.35rem] p-6 md:p-8 h-full flex flex-col">
+<!-- Scanner Tabs -->
+<div class="flex overflow-x-auto pb-4 mb-6 gap-2 border-b border-outline-variant/30 hide-scrollbar">
+<button class="scanner-tab active font-label-sm text-label-sm px-4 py-2 rounded-full bg-primary/10 text-primary border border-primary/30 whitespace-nowrap transition-all">Fake News</button>
+<button class="scanner-tab font-label-sm text-label-sm px-4 py-2 rounded-full text-on-surface-variant hover:text-on-surface hover:bg-surface-variant whitespace-nowrap transition-all">Scam Message</button>
+<button class="scanner-tab font-label-sm text-label-sm px-4 py-2 rounded-full text-on-surface-variant hover:text-on-surface hover:bg-surface-variant whitespace-nowrap transition-all">Phishing Link</button>
+<button class="scanner-tab font-label-sm text-label-sm px-4 py-2 rounded-full text-on-surface-variant hover:text-on-surface hover:bg-surface-variant whitespace-nowrap transition-all">Email</button>
+<button class="scanner-tab font-label-sm text-label-sm px-4 py-2 rounded-full text-on-surface-variant hover:text-on-surface hover:bg-surface-variant whitespace-nowrap transition-all">Screenshot</button>
+</div>
+<!-- Input Area -->
+<div class="flex-grow flex flex-col" id="inputView">
+<div class="relative flex-grow mb-6">
+<textarea class="w-full h-48 md:h-64 bg-surface-container-low border border-outline-variant/50 rounded-xl p-4 text-on-surface font-body-md text-body-md focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none resize-none transition-all" id="scanInput" placeholder="Paste suspected text, link, or email content here for AI analysis..."></textarea>
+<div class="absolute bottom-4 right-4 font-label-sm text-label-sm text-on-surface-variant">
+<span id="charCount">0</span> / 5000
+                            </div>
+</div>
+<div class="flex flex-wrap items-center justify-between gap-4">
+<div class="flex gap-2">
+<button class="p-2 rounded-lg bg-surface-container-high border border-outline-variant/50 text-on-surface-variant hover:text-on-surface transition-colors" title="Paste">
+<span class="material-symbols-outlined text-sm">content_paste</span>
+</button>
+<button class="p-2 rounded-lg bg-surface-container-high border border-outline-variant/50 text-on-surface-variant hover:text-on-surface transition-colors" title="Clear">
+<span class="material-symbols-outlined text-sm">delete</span>
+</button>
+<button class="px-3 py-2 rounded-lg bg-surface-container-high border border-outline-variant/50 text-on-surface-variant hover:text-on-surface text-sm transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">science</span> Sample
+                                </button>
+<button class="px-3 py-2 rounded-lg bg-surface-container-high border border-outline-variant/50 text-on-surface-variant hover:text-on-surface text-sm transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">upload_file</span> Upload
+                                </button>
+</div>
+<button class="bg-primary text-on-primary px-8 py-3 rounded-xl font-label-md text-label-md font-bold flex items-center gap-2 hover:bg-primary-container transition-colors ml-auto shadow-[0_0_15px_rgba(0,224,255,0.3)]" id="runScanBtn">
+<span class="material-symbols-outlined">analytics</span>
+                                Analyze Threat
+                            </button>
+</div>
+</div>
+<!-- Loading View -->
+<div class="hidden flex-col items-center justify-center py-12 flex-grow" id="loadingView">
+<div class="w-24 h-24 relative mb-6">
+<div class="absolute inset-0 rounded-full border-4 border-surface-variant"></div>
+<div class="absolute inset-0 rounded-full border-4 border-primary border-t-transparent animate-spin"></div>
+<div class="absolute inset-0 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-3xl animate-pulse">memory</span>
+</div>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-2">Analyzing Patterns...</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-8 max-w-sm text-center">Cross-referencing global threat databases and applying behavioral heuristic models.</p>
+<div class="w-full max-w-md h-2 bg-surface-variant rounded-full overflow-hidden">
+<div class="h-full bg-primary shimmer-progress" style="width: 60%;"></div>
+</div>
+</div>
+<!-- Results View -->
+<div class="hidden flex-col flex-grow" id="resultsView">
+<div class="flex items-center justify-between mb-6 pb-4 border-b border-outline-variant/30">
+<h3 class="font-headline-md text-headline-md text-on-surface">Analysis Complete</h3>
+<button class="text-primary hover:text-primary-container font-label-sm flex items-center gap-1 transition-colors" id="newScanBtn">
+<span class="material-symbols-outlined text-sm">refresh</span> New Scan
+                            </button>
+</div>
+<!-- Real results would go here, omitting for brevity in this simplified effort -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+<div class="col-span-1 glass-card rounded-xl p-6 border border-error/30 flex flex-col items-center justify-center text-center">
+<div class="w-24 h-24 rounded-full border-4 border-error flex items-center justify-center mb-4 bg-error-container/20">
+<span class="text-error font-display text-3xl font-bold">98%</span>
+</div>
+<h4 class="font-headline-lg-mobile text-headline-lg-mobile text-error mb-1">High Risk</h4>
+<p class="font-label-sm text-on-surface-variant">Phishing Attempt Detected</p>
+</div>
+<div class="col-span-1 md:col-span-2 flex flex-col gap-4">
+<div class="bg-surface-container p-4 rounded-xl border border-outline-variant/30">
+<h5 class="font-label-md text-on-surface mb-2 flex items-center gap-2"><span class="material-symbols-outlined text-primary text-sm">summarize</span> Summary</h5>
+<p class="font-body-md text-on-surface-variant text-sm">The analyzed text contains multiple psychological triggers common in urgency-based phishing scams. It attempts to direct the user to a recently registered, low-reputation domain mimicking a banking portal.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer from JSON -->
+<footer class="bg-surface w-full py-12 border-t border-outline-variant/20">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-gutter px-margin-desktop max-w-container-max mx-auto">
+<div class="col-span-1 md:col-span-2">
+<h2 class="font-display text-headline-md text-primary mb-4">FraudScanAI</h2>
+<p class="font-label-md text-label-md text-on-surface-variant max-w-md">© 2024 FraudScanAI. Technical Precision in Cybersecurity.</p>
+</div>
+<div class="col-span-1">
+<ul class="space-y-3">
+<li><a class="font-label-md text-label-md text-on-surface-variant hover:text-primary-fixed-dim transition-colors hover:opacity-80 transition-opacity" href="#">Documentation</a></li>
+<li><a class="font-label-md text-label-md text-on-surface-variant hover:text-primary-fixed-dim transition-colors hover:opacity-80 transition-opacity" href="#">Privacy Policy</a></li>
+</ul>
+</div>
+<div class="col-span-1">
+<ul class="space-y-3">
+<li><a class="font-label-md text-label-md text-on-surface-variant hover:text-primary-fixed-dim transition-colors hover:opacity-80 transition-opacity" href="#">Status</a></li>
+<li><a class="font-label-md text-label-md text-on-surface-variant hover:text-primary-fixed-dim transition-colors hover:opacity-80 transition-opacity" href="#">Security API</a></li>
+</ul>
+</div>
+</div>
+</footer>
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const scanInput = document.getElementById('scanInput');
+            const charCount = document.getElementById('charCount');
+            const runScanBtn = document.getElementById('runScanBtn');
+            const newScanBtn = document.getElementById('newScanBtn');
+            const inputView = document.getElementById('inputView');
+            const loadingView = document.getElementById('loadingView');
+            const resultsView = document.getElementById('resultsView');
+            const scannerContainer = document.getElementById('scannerContainer');
+            const heroScanBtn = document.getElementById('heroScanBtn');
+
+            // Textarea auto-resize and count
+            if(scanInput) {
+                scanInput.addEventListener('input', function() {
+                    this.style.height = 'auto';
+                    this.style.height = (this.scrollHeight) + 'px';
+                    charCount.textContent = this.value.length;
+                });
+            }
+
+            // Tabs toggle (visual only for this demo)
+            document.querySelectorAll('.scanner-tab').forEach(tab => {
+                tab.addEventListener('click', (e) => {
+                    document.querySelectorAll('.scanner-tab').forEach(t => {
+                        t.classList.remove('bg-primary/10', 'text-primary', 'border', 'border-primary/30', 'active');
+                        t.classList.add('text-on-surface-variant', 'hover:text-on-surface', 'hover:bg-surface-variant');
+                    });
+                    const target = e.target;
+                    target.classList.remove('text-on-surface-variant', 'hover:text-on-surface', 'hover:bg-surface-variant');
+                    target.classList.add('bg-primary/10', 'text-primary', 'border', 'border-primary/30', 'active');
+                });
+            });
+
+            // Scan Action
+            const performScan = () => {
+                inputView.classList.add('hidden');
+                loadingView.classList.remove('hidden');
+                loadingView.classList.add('flex');
+                scannerContainer.classList.add('scanning');
+
+                setTimeout(() => {
+                    loadingView.classList.remove('flex');
+                    loadingView.classList.add('hidden');
+                    resultsView.classList.remove('hidden');
+                    resultsView.classList.add('flex');
+                    scannerContainer.classList.remove('scanning');
+                }, 3000);
+            };
+
+            if(runScanBtn) runScanBtn.addEventListener('click', performScan);
+            
+            if(newScanBtn) {
+                newScanBtn.addEventListener('click', () => {
+                    resultsView.classList.add('hidden');
+                    resultsView.classList.remove('flex');
+                    inputView.classList.remove('hidden');
+                    if(scanInput) scanInput.value = '';
+                    if(charCount) charCount.textContent = '0';
+                });
+            }
+
+            if(heroScanBtn) {
+                heroScanBtn.addEventListener('click', () => {
+                    document.getElementById('scannerSection').scrollIntoView({ behavior: 'smooth' });
+                    if(scanInput) scanInput.focus();
+                });
+            }
+        });
+    </script>
+</body></html>
