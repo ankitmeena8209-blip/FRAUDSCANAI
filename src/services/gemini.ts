@@ -13,15 +13,60 @@ export interface GeminiAnalysisResponse {
 
 const CANDIDATE_MODELS = [
   'gemini-2.5-flash',
+  'gemini-2.0-flash',
+  'gemini-1.5-flash',
+  'gemini-1.5-pro',
+  'gemini-pro',
 ];
 
 const API_VERSIONS = ['v1', 'v1beta'];
 
-export async function analyzeContentWithGemini(content: string, type: ScanType): Promise<GeminiAnalysisResponse> {
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-  if (!apiKey) {
-    throw new Error('VITE_GEMINI_API_KEY is not defined in Vercel Environment Variables.');
+async function analyzeContentWithChatGPT(
+  content: string,
+  type: ScanType,
+  apiKey: string,
+  systemInstruction: string
+): Promise<GeminiAnalysisResponse> {
+  const prompt = `Threat/Content Type: ${type}\nInput Content:\n${content}`;
+
+  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: 'gpt-4o-mini',
+      messages: [
+        { role: 'system', content: systemInstruction },
+        { role: 'user', content: prompt },
+      ],
+      response_format: { type: 'json_object' },
+      temperature: 0.1,
+    }),
+  });
+
+  if (!res.ok) {
+    const errText = await res.text().catch(() => '');
+    throw new Error(`ChatGPT API error (${res.status}): ${errText || res.statusText}`);
   }
+
+  const data = await res.json();
+  const text = data.choices?.[0]?.message?.content;
+  if (!text) {
+    throw new Error('ChatGPT API returned an empty response.');
+  }
+
+  const parsed: GeminiAnalysisResponse = JSON.parse(text);
+  if (parsed.riskScore === undefined || !parsed.verdict) {
+    throw new Error('Missing required fields in ChatGPT response');
+  }
+  return parsed;
+}
+
+export async function analyzeContentWithGemini(content: string, type: ScanType): Promise<GeminiAnalysisResponse> {
+  const geminiApiKey = import.meta.env.VITE_GEMINI_API_KEY;
+  const chatGptApiKey = import.meta.env.VITE_CHATGPT_API || import.meta.env.VITE_CHATGPT_API_KEY || import.meta.env.VITE_OPENAI_API_KEY;
 
   const systemInstruction = `
 You are an expert AI cyber defense analyst. Analyze the user's input and determine if it represents a threat.
@@ -69,93 +114,107 @@ Your entire response must be a single, valid JSON object matching this schema:
   const prompt = `Threat/Content Type: ${type}\nInput Content:\n${content}`;
 
   let resultText = '';
-  let lastErrorMessage = '';
+  let lastGeminiError = '';
 
-  // Stage 1: Try direct REST API calls using v1 (stable) and v1beta endpoints across models
-  for (const version of API_VERSIONS) {
-    for (const model of CANDIDATE_MODELS) {
-      try {
-        const url = `https://generativelanguage.googleapis.com/${version}/models/${model}:generateContent?key=${apiKey}`;
-        const res = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            systemInstruction: {
-              parts: [{ text: systemInstruction }]
-            },
-            contents: [
-              {
-                role: 'user',
-                parts: [{ text: prompt }]
-              }
-            ],
-            generationConfig: {
-              responseMimeType: 'application/json',
-              temperature: 0.1
-            }
-          })
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (text) {
-            resultText = text;
-            break;
-          }
-        } else {
-          const errData = await res.json().catch(() => null);
-          lastErrorMessage = errData?.error?.message || res.statusText || `HTTP ${res.status}`;
-        }
-      } catch (err: any) {
-        lastErrorMessage = err?.message || 'Network request failed';
-      }
-    }
-    if (resultText) break;
-  }
-
-  // Stage 2: Fallback to SDK execution if REST calls were unfulfilled
-  if (!resultText) {
-    try {
-      const genAI = new GoogleGenerativeAI(apiKey);
-      for (const modelName of CANDIDATE_MODELS) {
+  // Stage 1: Try Gemini API if key exists
+  if (geminiApiKey) {
+    // Stage 1a: Direct REST API endpoints (v1 and v1beta)
+    for (const version of API_VERSIONS) {
+      for (const model of CANDIDATE_MODELS) {
         try {
-          const model = genAI.getGenerativeModel({
-            model: modelName,
-            systemInstruction,
-            generationConfig: {
-              responseMimeType: 'application/json',
-              temperature: 0.1,
-            },
+          const url = `https://generativelanguage.googleapis.com/${version}/models/${model}:generateContent?key=${geminiApiKey}`;
+          const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              systemInstruction: {
+                parts: [{ text: systemInstruction }]
+              },
+              contents: [
+                {
+                  role: 'user',
+                  parts: [{ text: prompt }]
+                }
+              ],
+              generationConfig: {
+                responseMimeType: 'application/json',
+                temperature: 0.1
+              }
+            })
           });
 
-          const result = await model.generateContent(prompt);
-          const response = await result.response;
-          resultText = response.text();
-
-          if (resultText) break;
+          if (res.ok) {
+            const data = await res.json();
+            const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (text) {
+              resultText = text;
+              break;
+            }
+          } else {
+            const errData = await res.json().catch(() => null);
+            lastGeminiError = errData?.error?.message || res.statusText || `HTTP ${res.status}`;
+          }
         } catch (err: any) {
-          lastErrorMessage = err?.message || lastErrorMessage;
+          lastGeminiError = err?.message || 'Network error';
         }
       }
-    } catch (err: any) {
-      lastErrorMessage = err?.message || lastErrorMessage;
+      if (resultText) break;
+    }
+
+    // Stage 1b: Fallback to SDK execution if REST calls were unfulfilled
+    if (!resultText) {
+      try {
+        const genAI = new GoogleGenerativeAI(geminiApiKey);
+        for (const modelName of CANDIDATE_MODELS) {
+          try {
+            const model = genAI.getGenerativeModel({
+              model: modelName,
+              systemInstruction,
+              generationConfig: {
+                responseMimeType: 'application/json',
+                temperature: 0.1,
+              },
+            });
+
+            const result = await model.generateContent(prompt);
+            const response = await result.response;
+            resultText = response.text();
+
+            if (resultText) break;
+          } catch (err: any) {
+            lastGeminiError = err?.message || lastGeminiError;
+          }
+        }
+      } catch (err: any) {
+        lastGeminiError = err?.message || lastGeminiError;
+      }
+    }
+  } else {
+    lastGeminiError = 'VITE_GEMINI_API_KEY is not defined in environment variables.';
+  }
+
+  // Stage 2: Return Gemini result if successful
+  if (resultText) {
+    try {
+      const parsed: GeminiAnalysisResponse = JSON.parse(resultText);
+      if (parsed.riskScore !== undefined && parsed.verdict) {
+        return parsed;
+      }
+    } catch {
+      // Ignore parse error and proceed to ChatGPT fallback if available
     }
   }
 
-  if (!resultText) {
-    throw new Error(
-      `Gemini API Error: ${lastErrorMessage || 'Failed to reach Gemini models'}. Please verify VITE_GEMINI_API_KEY in Vercel Environment Variables.`
-    );
+  // Stage 3: Immediate Fallback to ChatGPT API if Gemini failed or gave an error
+  if (chatGptApiKey) {
+    console.warn(`Gemini analysis unfulfilled (${lastGeminiError}). Redirecting immediately to ChatGPT API fallback...`);
+    try {
+      return await analyzeContentWithChatGPT(content, type, chatGptApiKey, systemInstruction);
+    } catch (chatGptErr: any) {
+      throw new Error(`AI Engine Error: Gemini (${lastGeminiError}) & ChatGPT (${chatGptErr.message}) both failed.`);
+    }
   }
 
-  try {
-    const parsed: GeminiAnalysisResponse = JSON.parse(resultText);
-    if (parsed.riskScore === undefined || !parsed.verdict) {
-      throw new Error('Missing required fields in Gemini response');
-    }
-    return parsed;
-  } catch (err: any) {
-    throw new Error(`Failed to parse Gemini analysis output: ${err.message}. Raw output: ${resultText}`);
-  }
+  // Stage 4: If neither engine worked, throw informative error
+  throw new Error(`Gemini API Error: ${lastGeminiError || 'Failed to generate analysis'}. Please verify VITE_GEMINI_API_KEY or VITE_CHATGPT_API in Vercel Environment Variables.`);
 }
