@@ -27,8 +27,11 @@ export function loadTheme(): 'dark' | 'light' {
 }
 
 export function createScanResult(input: Omit<ScanResult, 'id' | 'scannedAt'>): ScanResult {
+  const uuid = typeof crypto !== 'undefined' && crypto.randomUUID 
+    ? crypto.randomUUID() 
+    : Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
   return {
-    id: crypto.randomUUID(),
+    id: uuid,
     scannedAt: new Date().toISOString(),
     ...input,
   };
