@@ -4,7 +4,7 @@ export interface ScanResult {
   id: string;
   title: string;
   type: ScanType;
-  verdict: 'Safe' | 'Suspicious' | 'High Risk';
+  verdict: 'Safe' | 'Likely Safe' | 'Suspicious' | 'Likely Scam' | 'Scam Detected' | 'Insufficient Information';
   riskScore: number;
   confidence: number;
   summary: string;

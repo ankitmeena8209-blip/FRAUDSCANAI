@@ -5,6 +5,7 @@ import { SectionCard } from './components/SectionCard';
 import { FAQ_ITEMS, FEATURES, STATS } from './data/samples';
 import { useTheme } from './hooks/useTheme';
 import { createScanResult, loadHistory, saveHistory } from './services/storage';
+import { analyzeContentWithGemini } from './services/gemini';
 import type { HistoryEntry, ScanType } from './types';
 import { classNames } from './utils/helpers';
 
@@ -37,62 +38,45 @@ function App() {
     saveHistory(history);
   }, [history]);
 
-  const runScan = (content: string, mode: ScanType) => {
+  const runScan = async (content: string, mode: ScanType) => {
     setIsScanning(true);
     setLoadingStep(0);
-    const steps = [0, 1, 2, 3];
+    setResult(null);
 
-    steps.forEach((_, index) => {
-      window.setTimeout(() => {
-        setLoadingStep(index);
-        if (index === 3) {
-          const riskScore = mode === 'screenshot' ? 78 : mode === 'phishing-link' ? 86 : mode === 'email' ? 74 : mode === 'scam-message' ? 81 : 68;
-          const confidence = Math.max(82, Math.min(97, riskScore + 10));
-          const verdict = riskScore > 70 ? 'High Risk' : riskScore > 40 ? 'Suspicious' : 'Safe';
-          const patterns =
-            mode === 'phishing-link'
-              ? ['Impersonation domain', 'Credential harvesting cues', 'Urgent redirection']
-              : mode === 'scam-message'
-                ? ['Threatening language', 'Account urgency', 'Pressure to act fast']
-                : mode === 'email'
-                  ? ['Brand mimicry', 'Request for password', 'Suspicious sender tactics']
-                  : mode === 'screenshot'
-                    ? ['Popup deception', 'Fake verification prompt', 'Visual urgency']
-                    : ['Emotion-driven headline', 'Unverified authority claim', 'Rapid distribution pattern'];
+    const intervalId = window.setInterval(() => {
+      setLoadingStep((prev) => Math.min(prev + 1, 2));
+    }, 900);
 
-          const recommendations = [
-            'Avoid clicking links or sharing credentials.',
-            'Verify the message through an official channel.',
-            'Report the content and preserve evidence for review.',
-          ];
+    try {
+      const geminiResult = await analyzeContentWithGemini(content, mode);
+      
+      window.clearInterval(intervalId);
+      setLoadingStep(3);
 
-          const evidence = [
-            content.slice(0, 36),
-            `${mode.replace('-', ' ')} signal cluster detected`,
-            'high urgency language observed',
-          ];
+      const scanResult = createScanResult({
+        title: `${mode === 'fake-news' ? 'Fake News' : mode === 'scam-message' ? 'Scam Message' : mode === 'phishing-link' ? 'Phishing Link' : mode === 'email' ? 'Email' : 'Screenshot'} Analysis`,
+        type: mode,
+        verdict: geminiResult.verdict,
+        riskScore: geminiResult.riskScore,
+        confidence: geminiResult.confidence,
+        summary: geminiResult.reasoning,
+        patterns: geminiResult.warningSigns,
+        recommendations: geminiResult.safetyTips,
+        evidence: geminiResult.evidence,
+        mode: theme,
+        content,
+      });
 
-          const scanResult = createScanResult({
-            title: `${mode === 'fake-news' ? 'Fake News' : mode === 'scam-message' ? 'Scam Message' : mode === 'phishing-link' ? 'Phishing Link' : mode === 'email' ? 'Email' : 'Screenshot'} Analysis`,
-            type: mode,
-            verdict,
-            riskScore,
-            confidence,
-            summary: 'The content shows a strong combination of urgency, impersonation, and trust manipulation tactics that point toward a high-risk threat.',
-            patterns,
-            recommendations,
-            evidence,
-            mode: theme,
-            content,
-          });
-
-          const nextEntry = { ...scanResult, content } as HistoryEntry;
-          setResult(nextEntry);
-          setHistory((prev) => [nextEntry, ...prev].slice(0, 12));
-          setIsScanning(false);
-        }
-      }, index * 950);
-    });
+      const nextEntry = { ...scanResult, content } as HistoryEntry;
+      setResult(nextEntry);
+      setHistory((prev) => [nextEntry, ...prev].slice(0, 12));
+    } catch (err: any) {
+      window.clearInterval(intervalId);
+      console.error(err);
+      alert(err.message || 'An error occurred during analysis.');
+    } finally {
+      setIsScanning(false);
+    }
   };
 
   const deleteEntry = (id: string) => {
